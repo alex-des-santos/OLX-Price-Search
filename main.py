@@ -1,4 +1,5 @@
 import gradio as gr
+import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.common.by import By
@@ -6,7 +7,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import re
-import statistics
 import time
 import random
 
@@ -23,7 +23,6 @@ def inicializar_driver(driver_path):
 
 def extrair_precos_e_links(driver, termo_pesquisa, paginas=3):
     anuncios_totais = []
-    ignorados_totais = []
     url_base = f"https://www.olx.com.br/informatica?q={termo_pesquisa.replace(' ', '+')}&opst=2"
     
     for pagina in range(1, paginas + 1):
@@ -33,16 +32,15 @@ def extrair_precos_e_links(driver, termo_pesquisa, paginas=3):
             WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
             rolar_pagina_ate_fim(driver)
 
-            anuncios, ignorados = extrair_anuncios(driver)
+            anuncios, _ = extrair_anuncios(driver, termo_pesquisa)  # Passa o termo para a função
             anuncios_totais.extend(anuncios)
-            ignorados_totais.extend(ignorados)
         except Exception as e:
             print(f"Erro na página {pagina}: {e}")
     
     return anuncios_totais
 
 
-def extrair_anuncios(driver):
+def extrair_anuncios(driver, termo_pesquisa):
     anuncios_extracao = []
     ignorados = []
     try:
@@ -55,8 +53,10 @@ def extrair_anuncios(driver):
             try:
                 titulo_elemento = anuncio.find_element(By.CSS_SELECTOR, 'h2.olx-ad-card__title')
                 titulo = titulo_elemento.text.strip()
-                if not titulo:
-                    ignorados.append("Título vazio")
+                
+                # Filtra os anúncios cujo título não contém o termo pesquisado
+                if termo_pesquisa.lower() not in titulo.lower():
+                    ignorados.append(f"Título ignorado: {titulo}")
                     continue
 
                 elemento_preco = anuncio.find_element(By.CSS_SELECTOR, 'h3.olx-ad-card__price')
@@ -68,7 +68,7 @@ def extrair_anuncios(driver):
                 elemento_link = anuncio.find_element(By.CSS_SELECTOR, 'a.olx-ad-card__link-wrapper')
                 link = elemento_link.get_attribute('href')
 
-                anuncios_extracao.append({'titulo': titulo, 'preco': int(preco), 'link': link})
+                anuncios_extracao.append({'preco': int(preco), 'link': link})
             except NoSuchElementException:
                 ignorados.append("Elemento não encontrado")
     except TimeoutException:
@@ -90,35 +90,26 @@ def rolar_pagina_ate_fim(driver):
         altura_inicial = altura_atual
 
 
-def remover_outliers(precos):
-    if len(precos) < 2:
-        return precos
-    media = statistics.mean(precos)
-    desvio_padrao = statistics.stdev(precos)
-    return [preco for preco in precos if abs(preco - media) <= 2 * desvio_padrao]
-
-
 def buscar_anuncios(item_procurado):
     driver_path = "S:/Dev/edgedriver_win64/msedgedriver.exe"  # Atualize com o caminho do seu driver
     driver = inicializar_driver(driver_path)
     try:
         anuncios = extrair_precos_e_links(driver, item_procurado)
         if not anuncios:
-            return "Nenhum anúncio encontrado.", [], "N/A", "N/A", "N/A"
+            return "Nenhum anúncio encontrado.", pd.DataFrame(), "N/A", "N/A", "N/A"
         
         precos = [anuncio['preco'] for anuncio in anuncios]
         maior_preco = max(precos)
         menor_preco = min(precos)
         media_preco = sum(precos) / len(precos)
 
-        links_formatados = [
-            f"R${anuncio['preco']} - [Link do Anúncio]({anuncio['link']})"
-            for anuncio in anuncios
-        ]
+        # Criando DataFrame para exibição formatada
+        tabela_anuncios = pd.DataFrame(anuncios)
+        tabela_anuncios = tabela_anuncios[["preco", "link"]].rename(columns={"preco": "Preço (R$)", "link": "Link do Anúncio"})
         
         return (
             f"Encontrados {len(anuncios)} anúncios para '{item_procurado}'",
-            links_formatados,
+            tabela_anuncios,
             f"R${maior_preco}",
             f"R${menor_preco}",
             f"R${media_preco:.2f}"
@@ -147,12 +138,12 @@ with gr.Blocks() as demo:
         menor_preco = gr.Textbox(label="Menor Preço", interactive=False)
         media_preco = gr.Textbox(label="Preço Médio", interactive=False)
     
-    lista_links = gr.Textbox(label="Links e Preços", lines=10, interactive=False)
+    tabela_links = gr.Dataframe(label="Anúncios Encontrados")  # Usando Dataframe para exibir a tabela
     
     botao_buscar.click(
         interface,
         inputs=item_input,
-        outputs=[resumo, lista_links, maior_preco, menor_preco, media_preco]
+        outputs=[resumo, tabela_links, maior_preco, menor_preco, media_preco]
     )
 
 demo.launch()
