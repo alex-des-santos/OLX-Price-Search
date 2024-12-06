@@ -9,6 +9,7 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import re
 import time
 import random
+import webbrowser  # Para abrir automaticamente no navegador
 
 
 def inicializar_driver(driver_path):
@@ -105,11 +106,14 @@ def buscar_anuncios(item_procurado):
 
         # Criando DataFrame para exibição formatada
         tabela_anuncios = pd.DataFrame(anuncios)
+        tabela_anuncios['link'] = tabela_anuncios['link'].apply(
+            lambda x: f'<a href="{x}" target="_blank">{x}</a>'
+        )
         tabela_anuncios = tabela_anuncios[["preco", "link"]].rename(columns={"preco": "Preço (R$)", "link": "Link do Anúncio"})
         
         return (
             f"Encontrados {len(anuncios)} anúncios para '{item_procurado}'",
-            tabela_anuncios,
+            tabela_anuncios.to_html(escape=False, index=False),
             f"R${maior_preco}",
             f"R${menor_preco}",
             f"R${media_preco:.2f}"
@@ -138,7 +142,7 @@ with gr.Blocks() as demo:
         menor_preco = gr.Textbox(label="Menor Preço", interactive=False)
         media_preco = gr.Textbox(label="Preço Médio", interactive=False)
     
-    tabela_links = gr.Dataframe(label="Anúncios Encontrados")  # Usando Dataframe para exibir a tabela
+    tabela_links = gr.HTML(label="Anúncios Encontrados")  # Usando HTML para permitir links clicáveis
     
     botao_buscar.click(
         interface,
@@ -146,4 +150,7 @@ with gr.Blocks() as demo:
         outputs=[resumo, tabela_links, maior_preco, menor_preco, media_preco]
     )
 
-demo.launch()
+# Auto-lançamento da interface
+url = "http://localhost:7878"  # Alterada para porta 7878
+webbrowser.open(url)  # Abre o navegador automaticamente
+demo.launch(server_port=7878, server_name="localhost")
