@@ -1,12 +1,13 @@
 # OLX Price Search
 
 ## Descrição
-Este projeto tem como objetivo buscar e comparar preços de produtos no site OLX.
+Este projeto é um web scraper que busca e compara preços de produtos na OLX, apresentando os resultados em uma interface web amigável.
 
 ## Funcionalidades
 - Busca de produtos por nome
-- Comparação de preços entre diferentes vendedores
-- Filtros de busca por localização, preço e categoria
+- Exibição de preço máximo, mínimo e médio
+- Lista de anúncios com links diretos
+- Interface web interativa com Gradio
 
 ## Executando com Docker Compose
 Também é possível executar o projeto utilizando Docker Compose. Siga os passos abaixo:
@@ -26,8 +27,10 @@ Também é possível executar o projeto utilizando Docker Compose. Siga os passo
 
 ## Tecnologias Utilizadas
 - Python
-- BeautifulSoup
-- Requests
+- Selenium
+- Gradio
+- Docker
+- Chrome Webdriver
 
 ## Como Usar
 1. Clone o repositório:
