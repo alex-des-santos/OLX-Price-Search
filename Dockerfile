@@ -8,7 +8,6 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     curl \
-    unzip \
     chromium \
     libglib2.0-0 \
     libnss3 \
@@ -25,23 +24,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgbm-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Instale o Chromedriver
-RUN wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip && \
-    unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
-    rm /tmp/chromedriver.zip && \
-    chmod +x /usr/local/bin/chromedriver
-
-# Adicione /usr/local/bin ao PATH
-ENV PATH="/usr/local/bin:${PATH}"
-
 # Copie o arquivo de dependências para o container
 COPY requirements.txt .
 
 # Instale as dependências do Python
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Atualize o Selenium para a versão mais recente
-RUN pip install --upgrade selenium
 
 # Copie todo o projeto para o container
 COPY . .

@@ -3,34 +3,33 @@ import time
 import random
 import pandas as pd
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from webdriver_manager.chrome import ChromeDriverManager
 from utils import rolar_pagina_ate_fim
 
 
-def inicializar_driver(driver_path="/usr/local/bin/chromedriver"):
-    """Inicializa o WebDriver Chromium com as configurações corretas."""
-    service = ChromeService(executable_path=driver_path)
+def inicializar_driver():
+    """Inicializa o WebDriver Chromium com as configurações corretas usando webdriver_manager."""
+    service = Service(ChromeDriverManager().install())
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # Executa em modo headless (sem interface gráfica)
     options.add_argument("--disable-gpu")
     options.add_argument("--start-maximized")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--no-sandbox")
-    options.binary_location = "/usr/bin/chromium"  # Local do Chromium no contêiner
     options.add_argument(
-        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, como Gecko) Chrome/91.0.4472.124 Safari/537.36"
     )
     return webdriver.Chrome(service=service, options=options)
 
 
 def buscar_anuncios(item_procurado):
     """Busca anúncios no OLX e retorna informações formatadas."""
-    driver_path = "/usr/local/bin/chromedriver"
-    driver = inicializar_driver(driver_path)
+    driver = inicializar_driver()
     try:
         anuncios = extrair_precos_e_links(driver, item_procurado)
         if not anuncios:
