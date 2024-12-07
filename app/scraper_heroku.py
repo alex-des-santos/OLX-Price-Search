@@ -24,7 +24,7 @@ def inicializar_driver():
         " Chrome/91.0.4472.124 Safari/537.36"
     )
     # Use 'GOOGLE_CHROME_SHIM' para o binário do Chrome ou valor padrão
-    options.binary_location = os.environ.get("GOOGLE_CHROME_SHIM") or "/app/.apt/usr/bin/google-chrome"
+    options.binary_location = os.environ.get("GOOGLE_CHROME_SHIM") or "/app/.apt/usr/bin/google-chrome-stable"
 
     # Use 'CHROMEDRIVER_PATH' para o Chromedriver ou valor padrão
     service = ChromeService(executable_path=os.environ.get("CHROMEDRIVER_PATH") or "/app/.chromedriver/bin/chromedriver")
