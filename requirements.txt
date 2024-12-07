@@ -2,3 +2,4 @@ selenium
 gradio
 pandas
 webdriver_manager
+gunicorn

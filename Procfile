@@ -1,0 +1,1 @@
+web: python app/main_heroku.py
