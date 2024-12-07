@@ -21,11 +21,13 @@ def inicializar_driver():
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument(
-        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        " AppleWebKit/537.36 (KHTML, like Gecko)"
+        " Chrome/91.0.4472.124 Safari/537.36"
     )
-    options.binary_location = os.environ.get("GOOGLE_CHROME_BIN", "chromedriver")  # Caminho do Chrome no Heroku
+    options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
 
-    service = ChromeService(executable_path=os.environ.get("CHROMEDRIVER_PATH", "/usr/bin/chromedriver"))  # Caminho do ChromeDriver no Heroku
+    service = ChromeService(executable_path=os.environ.get("CHROMEDRIVER_PATH"))
 
     driver = webdriver.Chrome(service=service, options=options)
     return driver
