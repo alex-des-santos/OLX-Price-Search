@@ -25,11 +25,11 @@ def inicializar_driver():
         " AppleWebKit/537.36 (KHTML, like Gecko)"
         " Chrome/91.0.4472.124 Safari/537.36"
     )
-    # Atualize aqui para usar a nova variável de ambiente
-    options.binary_location = os.environ.get("CHROME_FOR_TESTING_BIN")
+    # Use 'GOOGLE_CHROME_SHIM' para o binário do Chrome
+    options.binary_location = os.environ.get("GOOGLE_CHROME_SHIM")
 
-    # Atualize aqui para usar a nova variável de ambiente
-    service = ChromeService(executable_path=os.environ.get("CHROMEDRIVER_FOR_TESTING_BIN"))
+    # Use 'CHROMEDRIVER_PATH' para o Chromedriver
+    service = ChromeService(executable_path=os.environ.get("CHROMEDRIVER_PATH"))
 
     driver = webdriver.Chrome(service=service, options=options)
     return driver
