@@ -1,7 +1,7 @@
 import gradio as gr
 import webbrowser
 import os
-from scraper import buscar_anuncios  # Importa a função principal do scraper
+from scraper_heroku import buscar_anuncios  # Importa a função principal do scraper
 
 # Configuração da Interface Gradio
 def interface(item_procurado):
