@@ -9,9 +9,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from webdriver_manager.chrome import ChromeDriverManager
 from utils import rolar_pagina_ate_fim
-
 
 def inicializar_driver():
     """Inicializa o WebDriver Chrome com as configurações corretas para o Heroku."""
@@ -25,15 +23,14 @@ def inicializar_driver():
         " AppleWebKit/537.36 (KHTML, like Gecko)"
         " Chrome/91.0.4472.124 Safari/537.36"
     )
-    # Use 'GOOGLE_CHROME_SHIM' para o binário do Chrome
-    options.binary_location = os.environ.get("GOOGLE_CHROME_SHIM")
+    # Use 'GOOGLE_CHROME_SHIM' para o binário do Chrome ou valor padrão
+    options.binary_location = os.environ.get("GOOGLE_CHROME_SHIM") or "/app/.apt/usr/bin/google-chrome"
 
-    # Use 'CHROMEDRIVER_PATH' para o Chromedriver
-    service = ChromeService(executable_path=os.environ.get("CHROMEDRIVER_PATH"))
+    # Use 'CHROMEDRIVER_PATH' para o Chromedriver ou valor padrão
+    service = ChromeService(executable_path=os.environ.get("CHROMEDRIVER_PATH") or "/app/.chromedriver/bin/chromedriver")
 
     driver = webdriver.Chrome(service=service, options=options)
     return driver
-
 
 def buscar_anuncios(item_procurado):
     """Busca anúncios no OLX e retorna informações formatadas."""
@@ -57,7 +54,6 @@ def buscar_anuncios(item_procurado):
     finally:
         driver.quit()
 
-
 def extrair_precos_e_links(driver, termo_pesquisa, paginas=3):
     """Extrai preços e links de anúncios do OLX."""
     anuncios_totais = []
@@ -76,7 +72,6 @@ def extrair_precos_e_links(driver, termo_pesquisa, paginas=3):
             print(f"Erro na página {pagina}: {e}")
 
     return anuncios_totais
-
 
 def extrair_anuncios(driver, termo_pesquisa):
     """Extrai dados de anúncios específicos."""
