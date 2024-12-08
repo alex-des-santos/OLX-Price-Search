@@ -1,71 +1,77 @@
 # OLX Price Search
 
-## Descrição
-Este projeto é um web scraper que busca e compara preços de produtos na OLX, apresentando os resultados em uma interface web amigável.
+## Description
+This project is a web scraper that searches and compares product prices on OLX, presenting the results in a user-friendly web interface.
 
-## Funcionalidades
-- Busca de produtos por nome
-- Exibição de preço máximo, mínimo e médio
-- Lista de anúncios com links diretos
-- Interface web interativa com Gradio
+## Features
+- Product search by name
+- Display of maximum, minimum, and average price
+- List of ads with direct links
+- Interactive web interface using Gradio
 
-## Executando com Docker Compose
-Também é possível executar o projeto utilizando Docker Compose. Siga os passos abaixo:
+## Running with Docker Compose
+You can also run the project using Docker Compose. Follow the steps below:
 
-1. Certifique-se de ter o Docker e o Docker Compose instalados em sua máquina.
-2. Navegue até o diretório do projeto:
-    ```sh
+1. Make sure you have Docker and Docker Compose installed on your machine.
+2. Navigate to the project directory:
+    ```bash
     cd OLX-Price-Search
     ```
-3. Construa e inicie os containers:
-    ```sh
+3. Build and start the containers:
+    ```bash
     docker-compose up --build
     ```
-4. Após o término da execução. Rode o comando:
-    ```docker compose up -d
+4. After the build completes, run:
+    ```bash
+    docker compose up -d
     ```
 
-## Tecnologias Utilizadas
+## Technologies Used
 - Python
 - Selenium
 - Gradio
 - Docker
 - Chrome Webdriver
 
-## Como Usar
-1. Clone o repositório:
-    ```sh
-    git clone https://github.com/seu-usuario/OLX-Price-Search.git
+## How to Use
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/alex-des-santos/OLX-Price-Search.git
     ```
-2. Navegue até o diretório do projeto:
-    ```sh
+2. Navigate to the project directory:
+    ```bash
     cd OLX-Price-Search
     ```
-3. Instale as dependências:
-    ```sh
+3. Install the dependencies:
+    ```bash
     pip install -r requirements.txt
     ```
-4. Execute o script principal:
-    ```sh
+4. Run the main script:
+    ```bash
     python main.py
     ```
 
-## Contribuição
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature:
-    ```sh
-    git checkout -b minha-feature
+## Contributing
+1. Fork the project
+2. Create a branch for your feature:
+    ```bash
+    git checkout -b my-feature
     ```
-3. Faça commit das suas alterações:
-    ```sh
-    git commit -m 'Minha nova feature'
+3. Commit your changes:
+    ```bash
+    git commit -m 'My new feature'
     ```
-4. Envie para o repositório remoto:
-    ```sh
-    git push origin minha-feature
+4. Push to the remote repository:
+    ```bash
+    git push origin my-feature
     ```
-5. Abra um Pull Request
+5. Open a Pull Request
 
-## Licença
-Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## Limitations and Future Improvements
+- **Error Handling:** The scraper could be improved with more robust error handling to gracefully manage situations like network issues or changes in OLX's website structure.
+- **Scalability:**  Currently, the scraper might not be optimized for handling a very large number of searches concurrently.  Future improvements could focus on improving scalability and performance.
+- **Data Persistence:**  Consider adding a mechanism to persist scraped data for offline access or analysis.
+- **Advanced Search Options:**  Expanding search capabilities to include filters (e.g., price range, location) would enhance the user experience.
