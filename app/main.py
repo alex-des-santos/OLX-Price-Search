@@ -1,3 +1,4 @@
+import os
 import gradio as gr
 import webbrowser
 from scraper import buscar_anuncios  # Importa a função principal do scraper
@@ -30,6 +31,5 @@ with gr.Blocks() as demo:
     )
 
 # Auto-lançamento da interface
-url = "http://0.0.0.0:7878"  # Alteração para permitir acesso externo
-webbrowser.open(url)
-demo.launch(server_port=7878, server_name="0.0.0.0")  # Alteração do server_name para '0.0.0.0'
+port = int(os.environ.get("PORT", 7878))  # Obtém a porta de $PORT ou usa 7878 como padrão
+demo.launch(server_port=port, server_name="0.0.0.0")
