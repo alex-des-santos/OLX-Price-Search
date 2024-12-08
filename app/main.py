@@ -1,11 +1,32 @@
 import os
 import gradio as gr
+import pandas as pd
 import webbrowser
-from scraper import buscar_anuncios  # Importa a função principal do scraper
+from scraper import buscar_anuncios
 
-# Configuração da Interface Gradio
+# Armazena os resultados completos após a busca
+resultados_completos = pd.DataFrame()
+
+# Função de interface para exibir resultados paginados
 def interface(item_procurado):
-    return buscar_anuncios(item_procurado)
+    global resultados_completos
+    mensagem, tabela, maior_preco, menor_preco, media_preco = buscar_anuncios(item_procurado)
+    resultados_completos = pd.read_html(tabela, flavor="html5lib")[0]  # Armazena resultados em DataFrame
+    return mensagem, exibir_pagina(1), maior_preco, menor_preco, media_preco
+
+# Função para exibir uma página específica
+def exibir_pagina(pagina, itens_por_pagina=10):
+    global resultados_completos
+    inicio = (pagina - 1) * itens_por_pagina
+    fim = inicio + itens_por_pagina
+    pagina_resultados = resultados_completos.iloc[inicio:fim]
+    return pagina_resultados.to_html(escape=False, index=False)
+
+# Função para exportar os resultados para CSV
+def exportar_csv():
+    global resultados_completos
+    resultados_completos.to_csv("resultados.csv", index=False)
+    return "resultados.csv"
 
 with gr.Blocks() as demo:
     gr.Markdown("# Busca de Anúncios na OLX")
@@ -24,12 +45,33 @@ with gr.Blocks() as demo:
     
     tabela_links = gr.HTML(label="Anúncios Encontrados")
     
+    # Controles para navegação por páginas
+    with gr.Row():
+        pagina_atual = gr.Number(value=1, label="Página", interactive=True)
+        botao_pagina = gr.Button("Exibir Página")
+    
+    # Botão para exportar resultados
+    botao_exportar = gr.Button("Exportar para CSV")
+    link_download = gr.File(label="Baixar CSV")
+
+    # Ações dos botões
     botao_buscar.click(
         interface,
         inputs=item_input,
         outputs=[resumo, tabela_links, maior_preco, menor_preco, media_preco]
     )
 
+    botao_pagina.click(
+        exibir_pagina,
+        inputs=pagina_atual,
+        outputs=tabela_links
+    )
+
+    botao_exportar.click(
+        exportar_csv,
+        outputs=link_download
+    )
+
 # Auto-lançamento da interface
-port = int(os.environ.get("PORT", 7878))  # Obtém a porta de $PORT ou usa 7878 como padrão
+port = int(os.environ.get("PORT", 7878))
 demo.launch(server_port=port, server_name="0.0.0.0")
