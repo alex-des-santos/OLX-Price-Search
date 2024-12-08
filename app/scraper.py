@@ -27,20 +27,20 @@ def inicializar_driver():
     return webdriver.Chrome(service=service, options=options)
 
 
-def buscar_anuncios(item_procurado):
+def buscar_anuncios(item_procurado, uf=None):
     """Busca anúncios no OLX e retorna informações formatadas."""
     driver = inicializar_driver()
     try:
-        anuncios = extrair_precos_e_links(driver, item_procurado)
+        ufs_disponiveis = obter_ufs_disponiveis(driver)
+        anuncios = extrair_precos_e_links(driver, item_procurado, uf=uf)
         if not anuncios:
-            return "Nenhum anúncio encontrado.", pd.DataFrame(), "N/A", "N/A", "N/A"
+            return "Nenhum anúncio encontrado.", pd.DataFrame(), "N/A", "N/A", "N/A", ufs_disponiveis
 
         precos = [anuncio["preco"] for anuncio in anuncios]
         maior_preco = max(precos)
         menor_preco = min(precos)
         media_preco = sum(precos) / len(precos)
 
-        # Criando DataFrame para exibição formatada
         tabela_anuncios = pd.DataFrame(anuncios)
         tabela_anuncios["link"] = tabela_anuncios["link"].apply(
             lambda x: f'<a href="{x}" target="_blank">{x}</a>'
@@ -55,15 +55,17 @@ def buscar_anuncios(item_procurado):
             f"R${maior_preco}",
             f"R${menor_preco}",
             f"R${media_preco:.2f}",
+            ufs_disponiveis
         )
     finally:
         driver.quit()
 
 
-def extrair_precos_e_links(driver, termo_pesquisa, paginas=3):
+def extrair_precos_e_links(driver, termo_pesquisa, paginas=3, uf=None):
     """Extrai preços e links de anúncios do OLX."""
     anuncios_totais = []
-    url_base = f"https://www.olx.com.br/informatica?q={termo_pesquisa.replace(' ', '+')}&opst=2"
+    base_domain = f"https://{'.' + uf.lower() + '.' if uf else ''}olx.com.br"
+    url_base = f"{base_domain}/informatica?q={termo_pesquisa.replace(' ', '+')}&opst=2"
 
     for pagina in range(1, paginas + 1):
         url_pagina = f"{url_base}&o={pagina}"
@@ -117,3 +119,23 @@ def extrair_anuncios(driver, termo_pesquisa):
         print(f"Erro ao extrair dados: {e}")
 
     return anuncios_extracao, ignorados
+
+
+def obter_ufs_disponiveis(driver):
+    """Extrai as UFs disponíveis na OLX."""
+    ufs = set()
+    try:
+        driver.get("https://www.olx.com.br/informatica")
+        links = driver.find_elements(By.CSS_SELECTOR, "a[href*='olx.com.br']")
+        
+        for link in links:
+            href = link.get_attribute("href")
+            if href and "olx.com.br" in href:
+                # Extrai a UF do link (exemplo: https://go.olx.com.br -> go)
+                match = re.search(r'https://([a-z]{2})\.olx\.com\.br', href)
+                if match:
+                    ufs.add(match.group(1).upper())
+    except Exception as e:
+        print(f"Erro ao obter UFs: {e}")
+    
+    return sorted(list(ufs))

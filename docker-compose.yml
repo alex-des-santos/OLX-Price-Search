@@ -1,11 +1,12 @@
 services:
   busca-olx:
-    container_name: olx-busca
+    container_name: olx-br-busca
     build: .
     ports:
       - "7878:7878"
     volumes:
       - .:/app
     environment:
+      - PORT=7878
       - PYTHONUNBUFFERED=1
     restart: unless-stopped

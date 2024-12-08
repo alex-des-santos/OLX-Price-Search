@@ -2,36 +2,86 @@ import os
 import gradio as gr
 import pandas as pd
 import webbrowser
-from scraper import buscar_anuncios
+from scraper import buscar_anuncios, obter_ufs_disponiveis
+import re
 
-# Armazena os resultados completos após a busca
+# Variável global para armazenar os resultados completos após a busca
 resultados_completos = pd.DataFrame()
+resultados_originais = pd.DataFrame()  # Nova variável
+# Variável global para armazenar UFs disponíveis
+ufs_disponiveis = []
 
 def make_clickable(url):
     return f'<a href="{url}" target="_blank">{url}</a>'
 
-# Função de interface para exibir resultados paginados
-def interface(item_procurado):
-    global resultados_completos
-    mensagem, tabela, maior_preco, menor_preco, media_preco = buscar_anuncios(item_procurado)
-    # Aqui estamos lendo novamente o HTML. Isso remove formatações HTML.
-    resultados_completos = pd.read_html(tabela, flavor="html5lib")[0]
+# Adicionar nova função de filtro
+def filtrar_por_uf(uf_selecionada):
+    """Filtra os resultados existentes por UF."""
+    global resultados_completos, resultados_originais
+    if uf_selecionada == "TODAS":
+        resultados_completos = resultados_originais.copy()
+    else:
+        mask = resultados_originais["Link do Anúncio"].str.contains(f"/{uf_selecionada.lower()}.", case=False, na=False)
+        resultados_completos = resultados_originais[mask]
     
-    # No scraper.py, a coluna final de links é "Link do Anúncio".
-    # Após o pd.read_html(), a formatação <a> é perdida, ficando apenas o texto do link.
-    # Portanto, precisamos reaplicar a formatação clicável.
-    if "Link do Anúncio" in resultados_completos.columns:
-        resultados_completos["Link do Anúncio"] = resultados_completos["Link do Anúncio"].apply(make_clickable)
+    return exibir_pagina(1)
 
-    return mensagem, exibir_pagina(1), maior_preco, menor_preco, media_preco
+# Função para obter UFs dos resultados
+def obter_ufs_dos_resultados(df):
+    """Extrai as UFs presentes nos links dos resultados."""
+    ufs = set()
+    if "Link do Anúncio" in df.columns:
+        for link in df["Link do Anúncio"]:
+            # Extrai a UF do link (exemplo: https://go.olx.com.br -> GO)
+            match = re.search(r'https://([a-z]{2})\.olx\.com\.br', link)
+            if match:
+                ufs.add(match.group(1).upper())
+    return sorted(list(ufs))
 
-# Função para exibir uma página específica
-def exibir_pagina(pagina, itens_por_pagina=10):
+# Modificar a função interface para armazenar resultados originais
+def interface(item_procurado, uf_selecionada):
+    global resultados_completos, resultados_originais
+    mensagem, tabela, maior_preco, menor_preco, media_preco, _ = buscar_anuncios(
+        item_procurado, 
+        uf=None  # Sempre busca todas as UFs
+    )
+    
+    if isinstance(tabela, pd.DataFrame):
+        resultados_originais = tabela.copy()
+    else:
+        # Se tabela é HTML string, usa StringIO
+        from io import StringIO
+        resultados_originais = pd.read_html(StringIO(tabela), flavor="html5lib")[0]
+    
+    if "Link do Anúncio" in resultados_originais.columns:
+        resultados_originais["Link do Anúncio"] = resultados_originais["Link do Anúncio"].apply(make_clickable)
+
+    # Obter UFs apenas dos resultados encontrados
+    ufs_disponiveis = obter_ufs_dos_resultados(resultados_originais)
+    
+    # Aplica o filtro inicial
+    tabela_filtrada = filtrar_por_uf(uf_selecionada)
+
+    # Atualiza o dropdown apenas com as UFs presentes nos resultados
+    choices = ["TODAS"] + ufs_disponiveis
+    
+    return (
+        mensagem, 
+        tabela_filtrada, 
+        maior_preco, 
+        menor_preco, 
+        media_preco, 
+        gr.update(choices=choices, value=uf_selecionada)
+    )
+
+def exibir_pagina(pagina):
     global resultados_completos
-    inicio = (pagina - 1) * itens_por_pagina
-    fim = inicio + itens_por_pagina
-    pagina_resultados = resultados_completos.iloc[inicio:fim]
-    return pagina_resultados.to_html(escape=False, index=False)
+    if resultados_completos.empty:
+        return "Nenhum resultado para exibir."
+    
+    inicio = (pagina - 1) * 10
+    fim = inicio + 10
+    return resultados_completos.iloc[inicio:fim].to_html(escape=False, index=False)
 
 # Função para exportar os resultados para CSV
 def exportar_csv():
@@ -39,11 +89,18 @@ def exportar_csv():
     resultados_completos.to_csv("resultados.csv", index=False)
     return "resultados.csv"
 
+# Modificar a interface Gradio
 with gr.Blocks() as demo:
     gr.Markdown("# Busca de Anúncios na OLX")
     
     with gr.Row():
         item_input = gr.Textbox(label="Item a pesquisar", placeholder="Digite o item desejado, ex: RTX 3090")
+        uf_dropdown = gr.Dropdown(
+            choices=["TODAS"],
+            value="TODAS",
+            label="UF",
+            interactive=True
+        )
         botao_buscar = gr.Button("Pesquisar")
     
     with gr.Row():
@@ -68,8 +125,8 @@ with gr.Blocks() as demo:
     # Ações dos botões
     botao_buscar.click(
         interface,
-        inputs=item_input,
-        outputs=[resumo, tabela_links, maior_preco, menor_preco, media_preco]
+        inputs=[item_input, uf_dropdown],
+        outputs=[resumo, tabela_links, maior_preco, menor_preco, media_preco, uf_dropdown]
     )
 
     botao_pagina.click(
@@ -81,6 +138,12 @@ with gr.Blocks() as demo:
     botao_exportar.click(
         exportar_csv,
         outputs=link_download
+    )
+
+    uf_dropdown.change(
+        filtrar_por_uf,
+        inputs=[uf_dropdown],
+        outputs=[tabela_links]
     )
 
 # Auto-lançamento da interface
