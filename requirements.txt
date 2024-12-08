@@ -3,3 +3,5 @@ gradio
 pandas
 webdriver_manager
 gunicorn
+html5lib
+beautifulsoup4
