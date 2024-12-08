@@ -7,11 +7,22 @@ from scraper import buscar_anuncios
 # Armazena os resultados completos após a busca
 resultados_completos = pd.DataFrame()
 
+def make_clickable(url):
+    return f'<a href="{url}" target="_blank">{url}</a>'
+
 # Função de interface para exibir resultados paginados
 def interface(item_procurado):
     global resultados_completos
     mensagem, tabela, maior_preco, menor_preco, media_preco = buscar_anuncios(item_procurado)
-    resultados_completos = pd.read_html(tabela, flavor="html5lib")[0]  # Armazena resultados em DataFrame
+    # Aqui estamos lendo novamente o HTML. Isso remove formatações HTML.
+    resultados_completos = pd.read_html(tabela, flavor="html5lib")[0]
+    
+    # No scraper.py, a coluna final de links é "Link do Anúncio".
+    # Após o pd.read_html(), a formatação <a> é perdida, ficando apenas o texto do link.
+    # Portanto, precisamos reaplicar a formatação clicável.
+    if "Link do Anúncio" in resultados_completos.columns:
+        resultados_completos["Link do Anúncio"] = resultados_completos["Link do Anúncio"].apply(make_clickable)
+
     return mensagem, exibir_pagina(1), maior_preco, menor_preco, media_preco
 
 # Função para exibir uma página específica
