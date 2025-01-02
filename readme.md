@@ -23,8 +23,9 @@ You can also run the project using Docker Compose. Follow the steps below:
     ```
 4. After the build completes, run:
     ```bash
-    docker compose up -d
+    docker-compose up -d
     ```
+5. Access the address http://localhost:7878/
 
 ## Technologies Used
 - Python
@@ -50,6 +51,7 @@ You can also run the project using Docker Compose. Follow the steps below:
     ```bash
     python main.py
     ```
+5. Access the address http://localhost:7878/
 
 ## Contributing
 1. Fork the project
@@ -72,6 +74,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Limitations and Future Improvements
 - **Error Handling:** The scraper could be improved with more robust error handling to gracefully manage situations like network issues or changes in OLX's website structure.
-- **Scalability:**  Currently, the scraper might not be optimized for handling a very large number of searches concurrently.  Future improvements could focus on improving scalability and performance.
-- **Data Persistence:**  Consider adding a mechanism to persist scraped data for offline access or analysis.
-- **Advanced Search Options:**  Expanding search capabilities to include filters (e.g., price range, location) would enhance the user experience.
+- **Scalability:** Currently, the scraper might not be optimized for handling a very large number of searches concurrently. Future improvements could focus on improving scalability and performance.
+- **Data Persistence:** Consider adding a mechanism to persist scraped data for offline access or analysis.
+- **Advanced Search Options:** Expanding search capabilities to include filters (e.g., price range, location) would enhance the user experience.
