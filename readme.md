@@ -1,3 +1,5 @@
+[Leia em Português](readme_pt-br.md)
+
 # OLX Price Search
 
 ## Description
