@@ -65,7 +65,7 @@ def extrair_precos_e_links(driver, termo_pesquisa, paginas=3, uf=None):
     """Extrai preços e links de anúncios do OLX."""
     anuncios_totais = []
     base_domain = f"https://{'.' + uf.lower() + '.' if uf else ''}olx.com.br"
-    url_base = f"{base_domain}/informatica?q={termo_pesquisa.replace(' ', '+')}&opst=2"
+    url_base = f"{base_domain}/q={termo_pesquisa.replace(' ', '+')}&opst=2"
 
     for pagina in range(1, paginas + 1):
         url_pagina = f"{url_base}&o={pagina}"
